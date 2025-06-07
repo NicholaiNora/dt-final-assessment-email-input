@@ -1,0 +1,61 @@
+.container {
+  width: 400px;
+}
+
+.wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  width: 400px;
+  height: 50px;
+  max-width: 400px;
+  gap: 6px;
+  padding: 0 10px 0 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  min-height: 44px;
+  border-radius: 8px;
+  background: #fdfdfd;
+  border: none;
+  outline: none;
+  filter: drop-shadow(0px 16px 34px rgba(48, 53, 57, 0.05));
+}
+
+.input {
+  flex: 1;
+  min-width: 120px;
+  border: none;
+  outline: none;
+  background: #fdfdfd;
+  color: #bdbdbd;
+
+  font-family: "Arial";
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 22px; /* 137.5% */
+  letter-spacing: -0.4px;
+}
+
+
+/* Email.module.css */
+.text {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 16px;
+  border: 1px solid transparent;
+}
+
+/* Valid email style */
+.valid {
+  background-color: #e0f7fa;
+  color: #00796b;
+  border-color: #00796b;
+}
+
+/* Invalid email style */
+.invalid {
+  background-color: #ffebee;
+  color: #d32f2f;
+  border-color: #d32f2f;
+}
