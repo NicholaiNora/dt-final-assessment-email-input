@@ -1,31 +1,61 @@
 import React, { useEffect, useState } from "react";
 import { getEmails } from "../services/email.js";
 import styles from "./Email.module.css";
+import EnteredEmail from "./EnteredEmail.jsx";
+import SuggestedEmail from "./SuggestedEmail.jsx";
 
 const Email = () => {
   const [query, setQuery] = useState("");
   const [emails, setEmails] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [suggestedEmails, setSuggestedEmails] = useState([]);
   const [enteredEmails, setEnteredEmails] = useState([]);
 
   useEffect(() => {
     const fetchEmails = async () => {
+      setLoading(true);
       const data = await getEmails();
       setEmails(data);
+      setLoading(false);
     };
     fetchEmails();
   }, []);
 
   useEffect(() => {
-    if (query.trim() === "") {
-      setSuggestedEmails([]);
-    } else {
-      const filteredEmails = emails.filter((email) =>
-        email.toLowerCase().includes(query.toLowerCase())
-      );
-      setSuggestedEmails(filteredEmails);
-    }
-  }, [query, emails]);
+    const fetchSuggestions = async () => {
+      setLoading(true);
+
+      if (query.trim() === "") {
+        setSuggestedEmails([]);
+        setLoading(false);
+        return;
+      }
+
+      const alreadyEntered = enteredEmails
+        .map((email) => email.value.toLowerCase());
+
+      await new Promise((r) => setTimeout(r, 1000));
+
+      const filtered = emails
+        .filter(
+          (email) =>
+            email.toLowerCase().includes(query.toLowerCase()) &&
+            !alreadyEntered.includes(email.toLowerCase())
+        )
+        .sort((a, b) => {
+          const startsWithA = a.toLowerCase().startsWith(query.toLowerCase());
+          const startsWithB = b.toLowerCase().startsWith(query.toLowerCase());
+          if (startsWithA && !startsWithB) return -1;
+          if (!startsWithA && startsWithB) return 1;
+          return a.localeCompare(b);
+        });
+
+      setSuggestedEmails(filtered);
+      setLoading(false);
+    };
+
+    fetchSuggestions();
+  }, [query, emails, enteredEmails]);
 
   const handleChange = (e) => {
     setQuery(e.target.value);
@@ -34,7 +64,7 @@ const Email = () => {
   const handleClickedSuggestedEmail = (email) => {
     addEmail(email);
     setQuery("");
-    setSuggestedEmails([]); // hide suggestedEmails after selection
+    setSuggestedEmails([]);
   };
 
   const addEmail = (email) => {
@@ -71,63 +101,23 @@ const Email = () => {
         className={styles.wrapper}
         onClick={() => document.getElementById("email-input").focus()}
       >
-        {enteredEmails.map((email, index) => (
-          <li
-            key={index}
-            className={`${styles.text} ${
-              email.valid ? styles.valid : styles.invalid
-            }`}
-          >
-            {email.value}
-            <span
-              className={styles.removeBtn}
-              onClick={() => removeEmail(index)}
-            >
-              ×
-            </span>
-          </li>
-        ))}
+        <EnteredEmail enteredEmails={enteredEmails} removeEmail={removeEmail} />
         <input
           id="email-input"
           className={styles.input}
           type="text"
-          placeholder="Enter recipients…"
+          placeholder={enteredEmails.length === 0 ? "Enter recipients…" : ""}
           value={query}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
         />
-      </div>
 
-      {suggestedEmails.length > 0 && (
-        <ul
-          style={{
-            background: "white",
-            border: "1px solid #ccc",
-            listStyle: "none",
-            marginTop: "0",
-            padding: "5px 0",
-            maxHeight: "150px",
-            overflowY: "auto",
-            position: "absolute",
-            zIndex: 1000,
-            width: "400px",
-          }}
-        >
-          {suggestedEmails.map((email, index) => (
-            <li
-              key={index}
-              onClick={() => handleClickedSuggestedEmail(email)}
-              style={{
-                padding: "8px",
-                cursor: "pointer",
-                borderBottom: "1px solid #eee",
-              }}
-            >
-              {email}
-            </li>
-          ))}
-        </ul>
-      )}
+        {loading && <div className={styles.loader}></div>}
+      </div>
+      <SuggestedEmail
+        suggestedEmails={suggestedEmails}
+        handleClickedSuggestedEmail={handleClickedSuggestedEmail}
+      />
     </div>
   );
 };
